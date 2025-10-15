@@ -1,0 +1,13 @@
+D2finition de valeurs globales et locales:
+
+
+>Définition globale simple: let id = expr1
+>multiple: let x = expr1 and y = expr2
+>définition locale simple: let id = expr1 in expr2
+>multiple: 
+
+
+
+Définition anonyme d'une fonction à 1 arg:
+
+function id -> expr

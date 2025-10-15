@@ -1,0 +1,12 @@
+exemple prog pgcd:
+
+	let rec pgcd(m,n) = 
+	if m = 0 then n
+		else pgcd(n mod m, m)
+
+donc récursion essentielle
+return inexistant juste on then n
+
+
+les fonctions en prg fonctionnelle sont des données de première classe, ca peut etre un res ou un argument
+

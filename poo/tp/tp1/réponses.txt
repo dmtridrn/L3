@@ -1,0 +1,3 @@
+Exercice1: 1 1 3 car static augmente à chaque new Truc
+
+Exo2: 
