@@ -6,26 +6,25 @@ let choose liste =
       let index = Random.int len in 
       List.nth liste index;;
 
-
-(*SANS LIST.MEM PCQ COMPLEXITE N CARRE*)
-let choose_elements liste nbr =
-  if nbr > List.length liste then failwith("pas assez d'éléments") else
-  let rec aux l1 nb acc = 
-    match nb with
+let choose_elements liste nombre = 
+  if nombre > List.length liste then failwith "pas assez d'éléments" else 
+  let rec aux liste nbr acc indices = 
+    match nbr with
     0 -> acc
-    | _ ->
-      match l1 with
-      [] -> failwith("liste vide")
-      | _ ->
-      let element = choose l1 in
-      let new_liste = 
-        let rec remove_elem liste elem = 
-          match liste with
-          [] -> []
-          | a::reste -> if a = elem then reste else a::remove_elem reste elem in 
-          remove_elem l1 element in
-      aux new_liste (nb-1) (element::acc)
-    in aux liste nbr [];;
+    | _ -> let idx = Random.int (List.length liste) in 
+           if List.mem idx indices then aux liste nbr acc indices 
+           else aux liste (nbr-1) ((List.nth liste idx)::acc) (idx::indices)
+          in aux liste nombre [] [];;
+
+let choose_sublist liste taille = 
+  if taille > List.length liste then failwith "pas assez d'éléments" else 
+  let rec aux liste nbr accl acci = 
+    match nbr with
+    0 -> List.rev accl
+    | _ -> let idx = Random.int (List.length liste) in
+           if idx <= acci || (idx+nbr) > List.length liste then aux liste nbr accl acci
+           else aux liste (nbr-1) ((List.nth liste idx)::accl) idx
+          in aux liste taille [] (-1);;
 
 let insert element liste = 
   let rec aux elt l1  = 
