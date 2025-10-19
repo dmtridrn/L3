@@ -3,7 +3,7 @@ import static ratexpr.Rat.*;
 
 import java.util.List;
 
-import ratexpr.Rat;
+import ratexpr.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -39,14 +39,24 @@ public class Main {
 
         System.out.println("*************contains******");
         System.out.println(p.derivee('a').derivee('b').containsUnit());
-        System.out.println(p.contains("abc"));
+        //System.out.println(p.contains("abc"));
 
         /*************** miroir *********/
         System.out.println("p=" + p);
         System.out.println("miroir =" + miroir(p));
     }
 
-    public static Rat miroir(Rat r) { return null; /* compléter ! */ }
+   public static Rat miroir(Rat r) { 
+        return switch(r){
+            case Epsilon e -> epsilon();
+            case EmptySet es -> emptySet();
+            case Symbol a -> symbol(a.getChar());
+            case Union e -> union(miroir(e.getFirst()),miroir(e.getSecond()));
+            case Append e -> append(miroir(e.getSecond()),miroir(e.getFirst()));
+            case Star e -> star(miroir(e.getExpr()));
+            default -> throw new IllegalArgumentException("il faut expression rationnelle");
+        };
+    }
 
 
 }

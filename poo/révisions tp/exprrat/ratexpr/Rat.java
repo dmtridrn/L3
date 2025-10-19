@@ -2,7 +2,7 @@ package ratexpr;
 
 import java.util.List;
 
-public interface Rat {
+public sealed interface Rat permits Symbol, EmptySet, Epsilon, Union, Append, Star{
 
     /* les méthodes d’instance */
     boolean containsUnit();
@@ -13,27 +13,27 @@ public interface Rat {
 
     /* les fabriques statiques */
     public static Rat symbol(char s) {
-        return null; /* compléter ! */
+        return new Symbol(s);
     }
 
     public static Rat emptySet() {
-        return null; /* compléter ! */
+        return new EmptySet();
     }
 
     public static Rat epsilon() {
-        return null; /* compléter ! */
+        return new Epsilon();
     }
 
     public static Rat append(Rat a, Rat b) {
-        return null; /* compléter ! */
+        return new Append(a, b);
     }
 
     public static Rat union(Rat a, Rat b) {
-        return null; /* compléter ! */
+        return new Union(a, b);
     }
 
     public static Rat star(Rat a) {
-        return null; /* compléter ! */
+        return new Star(a);
     }
 
 }
