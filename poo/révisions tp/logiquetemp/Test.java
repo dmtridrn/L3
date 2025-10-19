@@ -37,7 +37,8 @@ public class Test {
 
 	
 	/* Tests 2.3 */
-	/*
+	System.out.println("TESTSUB");
+	
 	Context.Formule ex7 = Context.And(List.of(p, q));
         System.out.println(ex7); // (and p q)
         System.out.println(ex7.substitute(Map.of(
@@ -54,7 +55,7 @@ public class Test {
         System.out.println(ex7.substitute(Map.of(
                 "q", ex7
         ))); // (and p (and p q))
-	*/
+	
 
 	
 	/* Tests 2.4.1 */
