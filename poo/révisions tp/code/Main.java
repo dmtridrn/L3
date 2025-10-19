@@ -43,7 +43,7 @@ public class Main {
         System.out.println("af(2)=" + af.eval(2));
         System.out.println("para(2)=" + para.eval(2));
         System.out.println("rExp(2)=" + rExp.eval(2));
-/*
+
         System.out.println("******** diff ********");
         System.out.println("a'=" + a.diff());
         System.out.println("l'=" + l.diff());
@@ -55,7 +55,7 @@ public class Main {
         System.out.println("para'=" + para.diff());
         System.out.println("rExp'=" + rExp.diff());
 
-         */
+
 
     }
 
