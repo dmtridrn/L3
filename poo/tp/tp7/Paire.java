@@ -1,4 +1,4 @@
-package tp7;
+package tp.tp7;
 
 import java.util.List;
 

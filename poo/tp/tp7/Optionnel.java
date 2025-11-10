@@ -1,9 +1,12 @@
-package tp7;
+package tp.tp7;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public class Optionnel<T> {
     private T element;
+    @SuppressWarnings("rawtypes")
+    private static final Optionnel VIDE = new Optionnel<>(null);
 
     private Optionnel(T element){
         this.element = element;
@@ -37,9 +40,19 @@ public class Optionnel<T> {
         return new Optionnel<>(elt);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Optionnel<T> vide(){
-        return new Optionnel<>(null);
+        return VIDE;
     }
-    
+
+    public static Optionnel<Integer> pairOuPas(List<Integer> liste){
+        for(Integer e : liste){
+            if(e%2 == 0){
+                return de(e);
+            }
+        }
+        return vide();
+    }
+
 
 }
