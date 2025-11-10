@@ -6,22 +6,17 @@ public class Test {
     
     public static void main(String[] args){
         MaListe<Integer> nombres = new MaListe<>();
-        MaListe<Personnes> pers = new MaListe<>();
-        nombres.add(10);
-        nombres.add(10);
-        nombres.add(10);
-        nombres.add(10);
-        nombres.add(10);
-        nombres.add(10);
-        nombres.add(10);
-        nombres.add(81938091);
-        Consumer<Integer> cons = new Consumer<Integer>() {
-            int cpt = 1;
-            @Override
-            public void accept(Integer x){
-                System.out.println(cpt++ + " : " + x);
-            }
-        };
-        nombres.pourChacun(cons);
+        nombres.add(2);
+        nombres.add(5);
+        nombres.add(3);
+
+        // Produit
+        int produit = nombres.fold(1, (a, x) -> a * x);
+        System.out.println("Produit : " + produit); // Produit : 30
+
+        // Maximum
+        int max = nombres.fold(Integer.MIN_VALUE, (a, x) -> Math.max(a, x));
+        System.out.println("Maximum : " + max); // Maximum : 5
     }
 }
+
