@@ -46,5 +46,28 @@ let un_completion g =
     in
     List.sort_uniq compare (direct @ indirect)
   in
-  {size = g.size; fwd = new_fwd}
+  {size = g.size; fwd = new_fwd};;
 
+let equal g1 g2 = 
+  if g1.size != g2.size then false else
+    let rec aux curr =
+      if curr = g1.size then true else
+      let v1 = g1.fwd curr in 
+      let v2 = g2.fwd curr in 
+      if v1<>v2 then false else
+        aux (curr+1)
+    in aux 0;;
+
+let rec completion_max g =
+  let g2 = un_completion g in 
+  if equal g g2 then g else 
+    completion_max g2;; 
+
+let rec connexe g = 
+  let graph = completion_max g in
+  let rec aux curr = 
+    if curr = graph.size then true else
+      let check = graph.fwd curr in 
+      if List.length check != graph.size then false else 
+        aux (curr+1)
+      in aux 0;;
