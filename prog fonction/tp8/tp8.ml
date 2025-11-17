@@ -108,4 +108,3 @@ and parse_expr s i k =
     if (snd operand2) = k then Op(operateur, fst operand1, fst operand2) else
       raise (Unexpected_character (s.[snd operand2], snd operand2));;
 
-parse_expr "((a+b)*c)-d" 0 11;;
