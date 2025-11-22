@@ -1,4 +1,4 @@
-let print_file filename =
+let print_file filename flag =
   try
     let ic = open_in filename in
     try
@@ -15,5 +15,5 @@ let () =
     let len = Array.length Sys.argv in 
     for i=1 to len -1 do 
       let filename = Sys.argv.(i) in 
-      print_file filename
+      print_file filename flag
     done
