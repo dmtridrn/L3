@@ -28,7 +28,7 @@ public class SafeReadWriteLock implements VerrouFonc{
         }
         catch(InterruptedException e){
             e.printStackTrace();
-        }
+        }w
         finally{
             verrou.finEcriture();
         }

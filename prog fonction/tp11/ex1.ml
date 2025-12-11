@@ -59,3 +59,11 @@ let pop_back vec =
     vec.contents.(vec.size - 1) <- vec.default;
     vec.size <- vec.size-1;
     Some elt;;
+
+let append v1 v2 = 
+  if v1.size + v2.size > (Array.length v1.contents) then raise(Failure "append");
+  Array.blit v2.contents 0 v1.contents v1.size v2.size;
+  v1.size <- v1.size + v2.size;;
+
+let resize vec s = 
+  
