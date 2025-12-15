@@ -1,3 +1,5 @@
+exception Break
+
 type 'a vector = {
   mutable contents : 'a array;
   default : 'a;
@@ -46,13 +48,21 @@ let clear vec =
   Array.fill (vec.contents) 0 (vec.size) (vec.default);
   vec.size <- 0;;
 
+
+let resize vec s = 
+  if(vec.size) > s then raise(Invalid_argument "resize");
+  let nv = Array.make s (vec.default) in 
+  Array.blit vec.contents 0 nv 0 vec.size;
+  vec.contents <- nv;;
+
 let push_back vec elt = 
-  if (vec.size)+1 > (Array.length vec.contents) then raise(Failure "pushback");
+  if (vec.size)+1 > (Array.length vec.contents) then resize vec (2*Array.length vec.contents);
   vec.contents.(vec.size) <- elt; 
   vec.size <- vec.size + 1;;
 
 
 let pop_back vec = 
+  if(vec.size) < (Array.length vec.contents)/4 then resize vec ((Array.length vec.contents)/2);
   if vec.size = 0 then None 
   else
     let elt = vec.contents.(vec.size - 1) in     
@@ -61,9 +71,13 @@ let pop_back vec =
     Some elt;;
 
 let append v1 v2 = 
-  if v1.size + v2.size > (Array.length v1.contents) then raise(Failure "append");
+  if v1.size + v2.size > (Array.length v1.contents) then resize v1 (v2.size+v1.size);
   Array.blit v2.contents 0 v1.contents v1.size v2.size;
   v1.size <- v1.size + v2.size;;
 
-let resize vec s = 
-  
+let iter f v = 
+  try
+    for i = 0 to v.size-1 do 
+      f (v.contents.(i)) i
+    done
+  with Break -> ();;
