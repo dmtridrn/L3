@@ -51,7 +51,7 @@ let rec eval expr env =
     | Sub -> v1 - v2
     | Mul -> v1 * v2
     | Div -> if v2 = 0 then raise Division_by_zero else v1/v2;;
-
+    
 
 
 
@@ -95,11 +95,13 @@ let rec parse_operand s i =
     find_matching_parenthesis s i in
     let expr = parse_expr s (i+1) nextpar
     in (expr, nextpar+1)
-  | a -> if is_alphanumeric a then 
+  | a -> 
+  if is_alphanumeric a then 
     let nextpos = find_next_symbol s i in 
-  let symbol = String.sub s i (nextpos -i) in 
-  try (Const (int_of_string symbol),nextpos) with Failure _ -> (Var(symbol),nextpos)
-else raise (Unexpected_character (a,i))
+    let symbol = String.sub s i (nextpos -i) in 
+    try (Const (int_of_string symbol),nextpos) with Failure _ -> (Var(symbol),nextpos)
+  else raise (Unexpected_character (a,i))
+
 and parse_expr s i k = 
   let operand1 = parse_operand s i in 
   if snd operand1 = k then fst operand1 else
