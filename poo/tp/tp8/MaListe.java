@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-class MaListe<E> extends LinkedList<E>{
-
+public class MaListe<E> extends LinkedList<E>{
+    
     void pourChacun(Consumer<E> action){
         for(E elt : this){
             action.accept(elt);
@@ -16,27 +16,28 @@ class MaListe<E> extends LinkedList<E>{
     }
 
     List<E> filter(Predicate<E> pred){
-        List<E> liste = new MaListe<>();
+        MaListe<E> nv = new MaListe<>();
         for(E elt : this){
             if(pred.test(elt)){
-                liste.add(elt);
+                nv.add(elt);
             }
         }
-        return liste;
+        return nv;
     }
 
     <U> List<U> map(Function<E,U> f){
-        List<U> liste = new MaListe<>();
+        MaListe<U> nv = new MaListe<>();
         for(E elt : this){
-            liste.add(f.apply(elt));
+            nv.add(f.apply(elt));
         }
-        return liste;
+        return nv;
     }
 
     <U> U fold(U z, BiFunction<U, E, U> f){
+        U a = z;
         for(E elt : this){
-            z = f.apply(z, elt);
+            a = f.apply(a, elt);
         }
-        return z;
+        return a;
     }
 }

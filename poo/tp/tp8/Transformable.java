@@ -1,8 +1,8 @@
-package tp.tp8;
+package tp8;
 
 import java.util.function.UnaryOperator;
 
 public interface Transformable<T> {
     T getElement();
-    void transorm(UnaryOperator<T> trans);
+    void transform(UnaryOperator<T> trans);
 }

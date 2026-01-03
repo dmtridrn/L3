@@ -1,5 +1,3 @@
-package tp.tp7;
-
 public class TestDivision {
     static Try<Integer> divide(int a, int b) {
         if (b == 0) return Try.failure(new ArithmeticException());
@@ -12,7 +10,7 @@ public class TestDivision {
     }
 
     private static void phase1() {
-        Try<Integer> r1 = divide(9, 3);
+        Try<Integer> r1 = divide(1, 0);
         // premier test
         if (r1.isSuccess()) System.out.println("Resultat : " + r1.get()); // dans ce cas, n'affiche rien
         else System.out.println("Echec : " + r1.getError());// dans ce cas, affiche "Echec : java.lang.ArithmeticException"
@@ -34,10 +32,9 @@ public class TestDivision {
             .flatMap(x -> divide(x, 9))
             .flatMap(x -> divide(x, 2))
             .map(x -> 5 * x);
-        if (r3.isSuccess()) {
-            System.out.println("Resultat : " + r3.get());
-        } else {
-            System.out.println("Echec : " + r3.getError());
+        switch (r3) {
+            case Try.Success(Integer r) -> System.out.println("Resultat : " + r);
+            case Try.Failure(Throwable e) -> System.out.println("Echec : " + e);
         } // doit afficher "Resultat : 10"
 
     }

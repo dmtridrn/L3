@@ -5,18 +5,26 @@ import java.util.function.Consumer;
 public class Test {
     
     public static void main(String[] args){
-        MaListe<Integer> nombres = new MaListe<>();
-        nombres.add(2);
-        nombres.add(5);
-        nombres.add(3);
+        MaListe<Personne> maliste = new MaListe<>();
+        Personne p1 = new Personne("riri");
+        Personne p2 = new Personne("titi");
+        Personne p3 = new Personne("pipi");
 
-        // Produit
-        int produit = nombres.fold(1, (a, x) -> a * x);
-        System.out.println("Produit : " + produit); // Produit : 30
+        maliste.add(p1);
+        maliste.add(p2);
+        maliste.add(p3);
 
-        // Maximum
-        int max = nombres.fold(Integer.MIN_VALUE, (a, x) -> Math.max(a, x));
-        System.out.println("Maximum : " + max); // Maximum : 5
+        Consumer<MaListe<Personne>> afficheur = liste -> {
+            int cpt = 1;
+            for(Personne p : liste) {
+                System.out.println(cpt + ": " + p);
+                cpt++;
+            }
+        };
+        
+        afficheur.accept(maliste);
+
+        
     }
 }
 
