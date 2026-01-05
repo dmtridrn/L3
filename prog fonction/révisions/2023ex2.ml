@@ -34,12 +34,12 @@ type mbp =
 | Concat of mbp * mbp
 
 let ecrire_mbp mbp = 
-  let rec aux mbp acc = 
+  let rec aux mbp = 
     match mbp with
-    Vide -> acc
-    | Paren(m) -> [PO]@(aux m acc)@[PF]
-    | Concat(a,b) -> (aux a acc)@(aux b acc)
-  in aux mbp [];;
+    Vide -> []
+    | Paren(m) -> [PO]@(aux m)@[PF]
+    | Concat(a,b) -> (aux a)@(aux b)
+  in aux mbp;;
 
 let lire_mbp mot=
 
@@ -64,7 +64,27 @@ let lire_mbp mot=
     | PF :: _, [_] -> failwith "Erreur : PF en trop"
     | _ -> failwith "Erreur syntaxe"
   in
-  aux mot [[]]
+  aux mot [[]];;
+
+let rec concats = function 
+  [] -> Vide
+  | [a] -> a
+  | a::reste -> Concat(a, concats reste);;
+
+let rec applatir mbp = 
+  match mbp with 
+  Vide -> []
+  | Paren(a) -> [Paren(a)]
+  | Concat(a,b) -> (applatir a)@(applatir b);;
+
+let rec normalise mbp = 
+  let plat = applatir mbp in 
+
+  let noraml = List.map( function 
+    | Paren(a) -> Paren(normalise a)
+    | _ -> failwith("")
+  ) plat 
+in concats noraml;;
 let exemple1_mbp = Concat (Paren (Paren Vide), Paren Vide);;
 
 ecrire_mbp exemple1_mbp;;

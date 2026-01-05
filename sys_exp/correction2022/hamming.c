@@ -11,8 +11,8 @@
 int hamming(int fd1, int fd2){
     int cpt = 0;
     int r1, r2;
-    char buf1[1024];
-    char buf2[1024];
+    char buf1[4096];
+    char buf2[4096];
 
     while(1){
         r1 = read(fd1, buf1, sizeof(buf1));

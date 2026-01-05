@@ -6,14 +6,10 @@
 #include <sys/wait.h>   // Pour wait() (nettoyage des processus fils)
 #include <time.h>       // Pour time() afin d'initialiser le générateur aléatoire
 #include <string.h>
-
-
 sig_atomic_t flag = 0;
-
 void sighandler(int sig){
     if(sig == SIGUSR1) flag += 1;
 }
-
 int main(){
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
