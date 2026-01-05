@@ -3,5 +3,6 @@
         ".",
         "révisions tp/exprrat"
     ],
-    "java.project.referencedLibraries": []
+    "java.project.referencedLibraries": [],
+    "java.debug.settings.onBuildFailureProceed": true
 }

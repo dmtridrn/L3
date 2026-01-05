@@ -6,7 +6,6 @@
 #include <sys/wait.h>
 
 int main(){
-
     if(fork()){
         wait(NULL);
         sleep(20);
