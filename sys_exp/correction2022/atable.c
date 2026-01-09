@@ -6,32 +6,44 @@
 #include <sys/wait.h>   // Pour wait() (nettoyage des processus fils)
 #include <time.h>       // Pour time() afin d'initialiser le générateur aléatoire
 #include <string.h>
-sig_atomic_t flag = 0;
-void sighandler(int sig){
-    if(sig == SIGUSR1) flag += 1;
+
+volatile sig_atomic_t flag = 0;
+
+void sighandle(int sig){
+    if(sig == SIGUSR1){
+        flag = 1;
+    }
 }
+
 int main(){
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = SIG_IGN;
+    sa.sa_handler = sighandle;
     sigaction(SIGUSR1, &sa, NULL);
-    for(int i = 1; i<5; i++){
-        if(fork() == 0){
-            sa.sa_handler = sighandler;
-            sigaction(SIGUSR1, &sa, NULL);
-            while(flag != i) pause();
-            printf("jrrv\n");
+    pid_t pid;
+    for(int i = 0; i<10; i++){
+        pid = fork();
+        if(pid == 0){
+            while(flag == 0){
+                pause();
+            }
+            srandom(time(NULL) ^ (getpid() << 8)); 
+            int temp = random() % 6;
+            sleep(temp);
+            printf("oui jrrv papa je suis %d\n", getpid());
             exit(0);
         }
     }
-    srand(time(NULL));
-    int attente = random() % 6;
-    sleep(attente);
-    for(int i = 0; i<4; i++){
-        sleep(1);
-        printf("à table les peti \n");
+    if(pid){
+        srandom(time(NULL) ^ (getpid() << 8)); 
+        int temps = random() % 11;
+        printf("je prépare a graille les gosses\n");
+        sleep(temps);
+        printf("ATABLE!!!!\n");
         kill(-getpid(), SIGUSR1);
-        wait(NULL);
+        for(int i = 0; i<10; i++){
+            pid_t mort = wait(NULL);
+            printf("enfin petit %d \n", mort);
+        }
     }
-    exit(0);
 }

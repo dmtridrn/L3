@@ -7,35 +7,35 @@
 #include <time.h>
 #include <string.h>
 
-sig_atomic_t flag = 0;
-
-void signahandle(int sig){
-    flag ++;
-}
-
-int main() {
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = signahandle;
-    sigaction(SIGUSR1, &sa, NULL);
-    pid_t pid = fork();
-    if(pid == 0){
-        sa.sa_handler = signahandle;
-        sigaction(SIGUSR1, &sa, NULL);
-        printf("ping ");
-        fflush(stdout);
-        kill(getppid(), SIGUSR1);
-        while(flag != 1) pause();
-        printf("pang ");
-        fflush(stdout);
-        exit(0);
+int man() {
+    int tubes[2];
+    pipe(tubes);
+    if (fork() == 0) {
+        int tube[2];
+        pipe(tube);
+        if (fork() == 0){
+            close(tube[1]);
+            char buf[100];
+            read(tube[0], buf, sizeof(buf));
+            printf("ping ");
+        }
+        else{
+            char buf[100];
+            close(tubes[1]); close(tube[0]);
+            read(tubes[0], buf, 100);
+            printf("pong ");
+            write(tube[1], "a", 1);
+        }
     }
     else{
-        while(flag != 1) pause();
-        printf("pong ");
-        fflush(stdout);
-        kill(pid, SIGUSR1);
-        wait(NULL);
-        exit(0);
+        if (fork() == 0){
+            close(tubes[0]);
+            printf("pang ");
+            write(tubes[1], "a", 1);
+        } 
     }
+}
+
+int main(){
+
 }

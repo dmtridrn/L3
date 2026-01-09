@@ -8,19 +8,17 @@
 int main(){
     if(fork()){
         wait(NULL);
-        sleep(20);
+        sleep(10);
     }
     else{
-        if(fork() && fork()){
-            sleep(6);
+        if(fork() && fork() && fork() && fork()){
+            sleep(7);
+            for(int i = 0; i<4; i++){
+                wait(NULL);
+            }
         }
         else{
-            if(fork()){
-                execlp("sleep", "sleep", "1", NULL);
-            }
-            else{
-                execlp("sleep", "sleep", "7", NULL);
-            }
+            execlp("sleep", "sleep", "1", NULL);
         }
     }
 }
