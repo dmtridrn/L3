@@ -1,0 +1,25 @@
+# --- Dune / OCaml Build ---
+_build/
+*.install
+*.cmi
+*.cmo
+*.cmx
+*.o
+*.a
+*.so
+*.cmxa
+*.cmxs
+
+# --- Fichiers de configuration IDE/Outils (générés) ---
+.merlin
+.ocamlformat-ignore
+
+# --- Opam (si tu as créé un switch local dans le dossier) ---
+_opam/
+.opam/
+
+# --- Fichiers systèmes / Éditeurs ---
+.DS_Store
+.vscode/
+*.swp
+*~
