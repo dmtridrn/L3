@@ -1,0 +1,9 @@
+(executable
+ (public_name rc4enc)
+ (name rc4enc)
+ (libraries byte RC4))
+
+ (executable
+ (public_name badauth)
+ (name badauth)
+ (libraries byte))

@@ -2,7 +2,7 @@ let r_decode = ref false
 let r_key = ref '\x00'
 
 let () =
-  Arg.parse
+  Arg.parse 
     [("-d", Arg.Set r_decode, "Decode") ;
      ("-e", Arg.Clear r_decode, "Encode")]
     (fun arg ->
@@ -23,6 +23,14 @@ let () =
     if nread <= 0 then
       eof := true
     else
+      for i = 0 to nread - 1 do
+        let curr = Bytes.get buffer i in
+        let new_char = 
+          if decode then Byte.sub curr key 
+          else Byte.add curr key 
+        in
+        Bytes.set buffer i new_char
+      done;
       (Out_channel.output stdout buffer 0 nread;
        Out_channel.flush stdout)
   done

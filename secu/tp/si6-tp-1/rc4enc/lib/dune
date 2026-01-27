@@ -1,0 +1,8 @@
+(library
+ (name byte)
+ (modules byte))
+
+(library
+ (name RC4)
+ (modules RC4)
+ (libraries byte))
