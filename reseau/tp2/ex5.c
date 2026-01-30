@@ -17,11 +17,11 @@ int main(){
 		exit(1);
 	}
 
-    struct sockaddr_in address_sock;
+    struct sockaddr_in6 address_sock;
 	memset(&address_sock, 0,sizeof(address_sock));
-	address_sock.sin_family = AF_INET6;
-	address_sock.sin_port = htons(7);
-	inet_pton(AF_INET6, ADR, &address_sock.sin_addr);
+	address_sock.sin6_family = AF_INET6;
+	address_sock.sin6_port = htons(7);
+	inet_pton(AF_INET6, ADR, &address_sock.sin6_addr);
 
     int r = connect(fdsock, (struct sockaddr *) &address_sock, sizeof(address_sock));
 	if(r == -1){
