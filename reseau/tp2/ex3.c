@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #define ADR "192.168.70.95"
 #define SIZE_MESS 100
@@ -45,7 +46,13 @@ int main(){
 	}
    
 	//bufrecv[recu] = '\0';
-	printf("%s\n", bufrecv);
+
+    time_t t = ntohl(bufrecv);
+    t -= 2208988800L;
+    char* res = ctime(t);
+
+	printf("%s\n", res);
+    
 
 	//*** fermeture de la socket ***
 	close(fdsock);
