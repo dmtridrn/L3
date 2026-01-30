@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <netinet/in.h>
 
 #define ADR "fdc7:9dd5:2c66:be86:4849:43ff:fe49:79bf"
 #define SIZE_MESS 100
