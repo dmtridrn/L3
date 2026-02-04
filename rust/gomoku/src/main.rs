@@ -99,5 +99,4 @@ fn main() {
         }
         joueur = !joueur;
     }
-
 }
