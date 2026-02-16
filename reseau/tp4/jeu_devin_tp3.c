@@ -94,8 +94,8 @@ void game_1p(int sock) {
 
 void *game_1p_point(void *arg) {
   int *joueurs = (int *)arg;
-  game_1p(*joueurs);
   free(arg);
+  game_1p(*joueurs);
   return NULL;
 }
 
