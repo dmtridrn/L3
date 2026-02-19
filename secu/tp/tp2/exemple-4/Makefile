@@ -1,14 +1,14 @@
 .PHONY: clean distclean
 
-program: main.o library.o
-	ld -z noseparate-code -o program main.o library.o
+program: ex4.o library.o
+	ld -z noseparate-code -o program ex4.o library.o
 	strip program
 
 %.o: %.s
 	as -o $@ $^
 
 clean:
-	rm -f main.o library.o
+	rm -f ex4.o library.o
 
 distclean: clean
 	rm -f program
