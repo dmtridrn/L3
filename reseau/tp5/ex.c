@@ -12,12 +12,15 @@
 // verrou
 pthread_mutex_t verrou = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition = PTHREAD_COND_INITIALIZER;
+pthread_cond_t condition_monitor = PTHREAD_COND_INITIALIZER;
 
 int reponse;
 int max_tent = 10;
 int joueurs_co = 0;
 int maxi;
 int rang = 1;
+int gagnant = -1;
+int **clients;
 
 int lire_nb(int sock, char *buf)
 {
@@ -35,7 +38,7 @@ int lire_nb(int sock, char *buf)
     if (ind > BUFFSIZE)
     {
         fprintf(stderr, "erreur format message recu\n");
-        exit(1);
+        pthread_exit(NULL);
     }
     buf[ind] = 0;
 
@@ -50,7 +53,7 @@ int ecrire_nb(int sock, char *buf)
         if ((lu = send(sock, buf, strlen(buf), 0)) <= 0)
         {
             perror("send");
-            exit(1);
+            pthread_exit(NULL);
         }
         lg += lu;
     } while (lg < strlen(buf));
@@ -60,10 +63,7 @@ int ecrire_nb(int sock, char *buf)
 
 int jeu(int sock)
 {
-
     int n = reponse;
-    printf("nb mystere pour partie socket %d = %d\n", sock, n);
-
     unsigned short int guess;
     int taille = 0;
     int tentatives = 20;
@@ -71,8 +71,9 @@ int jeu(int sock)
     char buff_in[BUFFSIZE];
     while ((taille = lire_nb(sock, buff_in)) > 0)
     {
+        if (gagnant >= 0) return 0;
         sscanf(buff_in, "%hu", &guess);
-        printf("Joueur courant a envoyé : %d\n", guess);
+        printf("Joueur a envoyé : %d\n", guess);
         char message[20];
         if (n < guess || n > guess)
         {
@@ -86,20 +87,47 @@ int jeu(int sock)
             sprintf(message, "PLUS %d\n", tentatives);
         else
         {
-            sprintf(message, "GAGNE\n");
             gagne = 1;
+            pthread_mutex_lock(&verrou);
+            if (gagnant == -1) {
+                gagnant = sock;
+            }
+            pthread_mutex_unlock(&verrou);
+            pthread_cond_signal(&condition_monitor);
+            return 0;
         }
         ecrire_nb(sock, message);
         if (gagne || !tentatives)
             break;
     }
-    printf("Fin de partie\n");
+    return 0;
+}
+
+void *monitor(void *arg){
+    pthread_mutex_lock(&verrou);
+    while(gagnant < 0){
+        pthread_cond_wait(&condition_monitor, &verrou);
+    }
+    pthread_mutex_unlock(&verrou);
+
+    sleep(1);
+
+    for(int i = 0; i < maxi; i++){
+        if(*clients[i] != gagnant){
+            send(*clients[i], "PERDU LOOSEEEEEEER\n", strlen("PERDU LOOSEEEEEEER\n"), 0);
+            close(*clients[i]);
+        }
+        else{
+            send(*clients[i], "OUAIIIIS GAGNE\n", strlen("OUAIIIIS GAGNE\n"), 0);
+            close(*clients[i]);
+        }
+    }
+    return NULL;
 }
 
 void *serve(void *arg)
 {
     int sock = *((int *)arg);
-    free(arg);
 
     // attente
     pthread_mutex_lock(&verrou);
@@ -120,22 +148,22 @@ void *serve(void *arg)
 
     // appel fonction jeu
     jeu(sock);
-    close(sock);
     return NULL;
 }
 
 int main(int argc, char **argv)
 {
     maxi = atoi(argv[1]);
+    clients = malloc(maxi * sizeof(int *));
 
     srandom(time(NULL));
-    reponse = random() % 100;
+    reponse = random() % 65535;
     printf("réponse: %d\n", reponse);
 
     // création socket serveur
     int sock = socket(PF_INET6, SOCK_STREAM, 0);
     if (sock < 0)
-        exit(1);
+        pthread_exit(NULL);
 
     // struct pour maniouler les ipv4
     struct sockaddr_in6 adrsock;
@@ -153,6 +181,12 @@ int main(int argc, char **argv)
     int l = listen(sock, 0);
 
     pthread_t threads[maxi];
+    pthread_t monitor_thread;
+
+    if (pthread_create(&monitor_thread, NULL, monitor, NULL) != 0)
+    {
+        perror("monitor thread");
+    }
 
     // accepter les joueurs dans un thread par joueur
     for (int i = 0; i < maxi; i++)
@@ -164,6 +198,7 @@ int main(int argc, char **argv)
         // un malloc par client
         int *sockclient = malloc(sizeof(int));
         *sockclient = accept(sock, (struct sockaddr *)&adr_client, &len_client);
+        clients[i] = sockclient;
 
         if (pthread_create(&threads[i], NULL, serve, sockclient) != 0)
         {
@@ -178,6 +213,10 @@ int main(int argc, char **argv)
     for (int i = 0; i < maxi; i++)
     {
         pthread_join(threads[i], NULL);
+    }
+    pthread_join(monitor_thread, NULL);
+    for(int i = 0; i<maxi; i++){
+        free(clients[i]);
     }
     exit(0);
 }

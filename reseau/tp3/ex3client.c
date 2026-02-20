@@ -6,6 +6,7 @@
 #include <time.h>
 
 int main(){
+    srandom(time(NULL));
     int sock = socket(PF_INET, SOCK_STREAM, 0);
     if (sock < 0){
         exit(1);
@@ -34,7 +35,7 @@ int main(){
 
         // Conversion du nombre en string pour l'envoi
         char msg[32];
-        int len = snprintf(msg, sizeof(msg), "%d", guess);
+        int len = snprintf(msg, sizeof(msg)+1, "%d\n", guess);
         send(sock, msg, len, 0);
 
         // Réception de la réponse du serveur
