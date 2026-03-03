@@ -43,7 +43,10 @@ int main(int argc, char **argv){
         }
         p = p->ai_next;
     }
-    if (p == NULL) exit(1);
+    if (p == NULL){
+        perror("NAN pas connect");
+        exit(1);
+    }
     
     union sockadresse adr;
     memset(&adr, 0, sizeof(adr));
@@ -62,6 +65,7 @@ int main(int argc, char **argv){
         recu[n] = '\0'; // On ferme la chaîne proprement
     }
     if(strncmp("220 ", recu, 4) != 0){
+        perror("NAN pas 220");
         exit(1);
     }
     puts("OKOKOK");
