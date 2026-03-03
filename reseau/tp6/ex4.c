@@ -59,7 +59,7 @@ int main(int argc, char **argv){
     freeaddrinfo(r);
 
     char recu[512];
-    memset(recu, 0, 512);
+    memset(&recu, 0, 512);
     int n = recv(sock, recu, sizeof(recu)-1, 0);
     if (n > 0) {
         recu[n] = '\0'; // On ferme la chaîne proprement
@@ -69,4 +69,24 @@ int main(int argc, char **argv){
         exit(1);
     }
     puts("OKOKOK");
+
+    char ecr[100];
+    memset(&ecr, 0, 100);
+    snprintf(ecr, sizeof(ecr)-1, "DEFINE * %s\r\n", argv[2]);
+    send(sock, ecr, strlen(ecr), 0);
+    memset(&recu, 0, 512);
+    char check[4];
+
+    while(1){
+        n = recv(sock, recu, sizeof(recu)-1, 0);
+        if(n <= 0){
+            exit(1);
+        }
+        recu[n] = '\0';
+        printf("%s", recu);
+        if(strstr(recu, "\r\n.\r\n") != NULL){
+            break;
+        }
+    }
+    exit(0);
 }
