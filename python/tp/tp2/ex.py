@@ -100,3 +100,6 @@ def gen_etoile_expr():
 def gen_etoiles_yield():
     for i in range(1, 10**6):
         yield i*"*"
+
+for i in gen_etoiles_yield():
+    print(i)

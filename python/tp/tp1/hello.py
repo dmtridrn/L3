@@ -10,7 +10,7 @@ def count_blanks(s):
 def is_palindrome(s):
     return s == s[::-1]
 
-def count(s, o):
+def count(s:str, o):
     if not o:
         return 0
     cpt = 0
