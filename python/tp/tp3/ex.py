@@ -22,11 +22,9 @@ def merge(d1: dict, d2: dict):
 def inverse(d: dict):
     return {} if (len(set(d.values())) != len(d.values())) else {v:k for k,v in d.items()}
 
-
 def print_dict(d: dict):
     for k,v in d.items():
         print(f"{k} {v}")
-
 
 def Graphe(S, L):
     dico = {x:set() for x in S}
@@ -38,7 +36,6 @@ def PrintG(D: dict):
     for sommet,voisins in D.items():
         voisins2 = ", ".join(voisins)
         print(f"{sommet} -> {voisins2}")
-
 
 def DFS(g: dict):
     compteur = 0

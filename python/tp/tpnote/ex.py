@@ -1,18 +1,31 @@
-def Chaine(s: str):
+import re
+
+
+def Chaine(s:str):
     return s.isdigit()
 
 def aux(L):
     return [i for i in L if i%2 == 0]
 
-def sous_liste(L, k1, k2):
-    return [i for i in L if (i<=k2) and (i>=k1)]
+def zzz(l1,l2):
+    res = []
+    for i in range(len(l1)):
+        res.append(l1[i])
+        res.append(l2[i])
+    return res
 
-def zzz(L1,L2):
-    x = []
-    for i in range(0,len(L1)):
-        x.append(L1[i])
-        x.append(L2[i])
-    return x
+def TriAbsDecr(l: list):
+    l.sort(key=lambda x: abs(x), reverse=True)
+    return l
 
-def TriAbsDecr(L):
-    return sorted(L, key=abs, reverse=True)
+def verifDico(d:dict):
+    return len(d.keys()) != len(set(d.values()))
+
+
+def nbLignes(nom:str):
+    with open(nom, 'r') as f:
+        lignes = f.readlines()
+        for l in lignes:
+            if "bip" in l:
+                print(l)
+
