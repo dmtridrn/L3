@@ -16,7 +16,7 @@ int main(int argc, char **argv){
     memset(&adrsock, 0, sizeof(adrsock));
     adrsock.sin_family = AF_INET;
     adrsock.sin_port = htons(2121);
-    adrsock.sin_addr.s_addr = htonl(INADDR_ANY);
+    inet_pton(AF_INET, "127.0.0.1", &(adrsock.sin_addr));
 
     int r = connect(sock, (struct sockaddr *) &adrsock, sizeof(adrsock));
 	if(r == -1){

@@ -108,9 +108,8 @@ int main(int argc, char **argv){
         }
         buffer.buff[n] = '\0';
         printf("%s", buffer.buff);
-        if(strstr(buffer.buff, "\r\n.\r\n") != NULL){
+        if(is_last_line(&buffer)){
             break;
-
         }
     }
     exit(0);

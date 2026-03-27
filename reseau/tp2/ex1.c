@@ -8,8 +8,8 @@
 
 
 int main(){
-    uint32_t witness = 0x01020304;
-    unsigned char *bytes = (unsigned char*)&witness;
+    uint32_t test = 0x01020304;
+    unsigned char *bytes = (unsigned char*)&test;
     for(int i = 0; i<4; i++){
         printf("%i", bytes[i]);
     }
