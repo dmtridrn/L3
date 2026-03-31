@@ -1,6 +1,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 struct entete {
     uint16_t id;      
@@ -67,13 +70,13 @@ int main(int argc, char *argv[]) {
 
     unsigned char *qinfo = qname + strlen(hostname) + 2;
 
-    uint16_t *qtype;
-    *qtype = htons(1); 
-    qinfo += sizeof(uint16_t);
+    uint16_t type = htons(1);
+        uint16_t class = htons(1);
 
-    uint16_t *qclass;
-    *qclass = htons(1); 
-    qinfo += sizeof(uint16_t);
+        memcpy(qinfo, &type, 2);
+        qinfo += 2;
+        memcpy(qinfo, &class, 2);
+        qinfo += 2;
 
     int packet_size = qinfo - buffer;
 
@@ -81,6 +84,29 @@ int main(int argc, char *argv[]) {
         perror("Erreur lors de l'envoi");
         return 1;
     }
+    socklen_t addrlen = sizeof(dest);
+    if (recvfrom(sock, buffer, 512, 0, (struct sockaddr*)&dest, &addrlen) < 0) {
+        perror("Erreur lors de l'envoi");
+        return 1;
+    }
+    struct entete *reponse = (struct entete*)buffer;
+    uint16_t flags = ntohs(reponse->flags);
+    int rcode = flags & 0x000F; 
+    if (rcode != 0) {
+        printf("err dns: %d\n", rcode); 
+        return 1;
+    }
 
+    unsigned char *curs = buffer + packet_size + 10;
+    uint16_t rdlength;
+    memcpy(&rdlength, curs, 2);
+    rdlength = ntohs(rdlength);
+    curs += 2;
+
+    if (rdlength == 4) {
+        printf("Adresse IP : %d.%d.%d.%d\n", curs[0], curs[1], curs[2], curs[3]);
+    }
+
+    close(sock);
     return 0;
 }
