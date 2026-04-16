@@ -35,7 +35,8 @@ int main(){
 
         char addr_buf[INET6_ADDRSTRLEN];
         memset(addr_buf, 0, sizeof(addr_buf));
-
+        
+        //affichage
         if (inet_ntop(AF_INET6, &(adrclient.sin6_addr), addr_buf, sizeof(addr_buf)) == NULL){
             perror("erreur recuperation de l'adresse IPv6");
         }

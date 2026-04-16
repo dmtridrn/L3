@@ -17,28 +17,27 @@ int main(){
 
     int min = 0;
     int max = 65535;
-    char buffer[100];//réception
-    char buffrep[100];//envoi
+    uint8_t reception[2]; //reception métisse
+    uint16_t envoi; //envoi métisse
 
     for(int i = 0; i<20; i++){
         //envoi guess métisse
-        int guess = (max+min)/2;
-        snprintf(buffrep, sizeof(buffrep), "%d\n", guess);
+        uint16_t guess = (max+min)/2;
         printf("j'envoie un métisse %d\n", guess);
-        send(sock, buffrep, strlen(buffrep), 0);
+        envoi = htons(guess);
+        send(sock, &envoi, 2, 0);
 
         //reception réponse
-        memset(buffer, 0, sizeof(buffer));
-        recv(sock, buffer, sizeof(buffer),0);
-        printf("serveur métissé répond: %s\n", buffer);
+        recv(sock, reception, 2,0);
+        printf("serveur métissé répond: %d\n", reception);
 
-        if(strstr(buffer, "MOINS")){
+        if(reception[1] == 0){
             max = guess - 1;
         }
-        else if(strstr(buffer, "PLUS")){
+        else if(reception[1] == 1){
             min = guess + 1;
         }
-        else if(strstr(buffer, "AYOOOO") || strstr(buffer, "tayoooo")){
+        else{
             printf("ayooo g perdu ou gagné\n");
             break;
         }

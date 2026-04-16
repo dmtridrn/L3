@@ -29,30 +29,31 @@ int main(){
 
     int reponse = random() % 65535;
     printf("%d\n", reponse);
-    char buffer[100];
+    uint16_t rep;
     int tentatives_restantes = 20;
-    char buffrep[1000];
+    uint8_t envoi[2]; //premier octet: nombre d'essais deuxieme: 0 ou 1
     while(tentatives_restantes > 0){
-        int envoi = recv(sockclient, buffer, sizeof(buffer), 0);
-        int guess = atoi(buffer);
-        if(guess > reponse){
-            snprintf(buffrep, sizeof(buffrep), "MOINS! %d tentatives restantes métissées\n", tentatives_restantes);
-            send(sockclient, buffrep, strlen(buffrep), 0);
+        envoi[1] = tentatives_restantes;
+        recv(sockclient, &rep, 2, 0);
+        uint16_t vraierep = ntohs(rep);
+        if(vraierep > reponse){
+            envoi[1] = 0;
+            send(sockclient, envoi, 2, 0);
         }
-        else if(guess < reponse){
-            snprintf(buffrep, sizeof(buffrep), "PLUS! %d tentatives restantes métissées\n", tentatives_restantes);
-            send(sockclient, buffrep, strlen(buffrep), 0);
+        else if(vraierep < reponse){
+            envoi[1] = 1;
+            send(sockclient, envoi, 2, 0);
         }
-        else if(guess == reponse){
-            snprintf(buffrep, sizeof(buffrep), "AYOOOO! bien ouej mon métisse\n");
-            send(sockclient, buffrep, strlen(buffrep), 0);
+        else if(vraierep == reponse){
+            envoi[1] = 1;
+            send(sockclient, envoi, 2, 0);
             break;
         }
         tentatives_restantes --;
     }
     if(tentatives_restantes == 0){
-        snprintf(buffrep, sizeof(buffrep), "tayoooo mon métisse c loose\n");
-        send(sockclient, buffrep, strlen(buffrep), 0);
+        envoi[1] = 0;
+        send(sockclient, envoi, 2, 0);
     }
     close(sockclient);
     close(sock);
