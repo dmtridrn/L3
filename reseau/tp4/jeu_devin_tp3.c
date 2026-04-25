@@ -59,10 +59,11 @@ int ecrire_nb(int sock, char *buf) {
 void game_1p(int sock) {
   srandom(time(NULL) + sock);
   
+  // une valeur aléatoire mystere entre 0 et 65536
   unsigned short int n = random() % (1 << 16); 
   printf("nb mystere pour partie socket %d = %d\n", sock, n);
 
-  unsigned short int guess;
+  unsigned short int guess;  // le nb proposé par le joueur, sur 2 octets
   int taille = 0;
   int tentatives = 20;
   int gagne = 0;
@@ -94,7 +95,6 @@ void game_1p(int sock) {
 
 void *game_1p_point(void *arg) {
   int *joueurs = (int *)arg;
-  free(arg);
   game_1p(*joueurs);
   return NULL;
 }
@@ -103,56 +103,52 @@ void *game_1p_point(void *arg) {
  * serveur pour jeu 1 player avec 1 connexion à la fois
  */
 int server_1p() {
-    int serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+  int serv_sock = socket(PF_INET, SOCK_STREAM, 0);
 
-    struct sockaddr_in serv_addr;
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(4242);
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  struct sockaddr_in serv_addr;
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_port = htons(4242);
+  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0) {
-        perror("Échec de bind");
-        exit(-1);
-    }
+  int r = bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+  if (r != 0) {
+    fprintf(stderr, "Échec de bind");
+    exit(-1);
+  }
 
-    if (listen(serv_sock, 5) != 0) { 
-        perror("Échec de listen");
-        exit(-1);
-    }
+  r = listen(serv_sock, 0);
+  if (r != 0) {
+    fprintf(stderr, "Échec de listen");
+    exit(-1);
+  }
 
-    printf("Serveur en attente sur le port 4242...\n");
+  while (1) {
+    struct sockaddr_in addrclient;
+    socklen_t size = sizeof(addrclient);
 
-    while (1) {
-        struct sockaddr_in addrclient;
-        socklen_t size = sizeof(addrclient);
+    int *sock_client = malloc(sizeof(int));
+    if (sock_client == NULL) continue;
     
-        int *sock_client = malloc(sizeof(int));
-        if (sock_client == NULL) continue;
+    *sock_client = accept(serv_sock, (struct sockaddr *) &addrclient, &size);
 
-        *sock_client = accept(serv_sock, (struct sockaddr *)&addrclient, &size);
-
-        if (*sock_client < 0) {
-            perror("Échec de accept");
-            free(sock_client);
-            continue;
-        } 
-        
-        pthread_t thread;
-        if (pthread_create(&thread, NULL, game_1p_point, sock_client) != 0) {
-            perror("Erreur création thread");
-            close(*sock_client);
-            free(sock_client);
-            continue;
-        }
-
-        pthread_detach(thread);
-
-        char nom_dst[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &addrclient.sin_addr, nom_dst, sizeof(nom_dst));
-        printf("Nouveau client : %s via socket %d\n", nom_dst, *sock_client);
-        
+    if (*sock_client < 0) {
+      fprintf(stderr, "Échec de accept");
+      free(sock_client);
+      continue;
     }
 
-    close(serv_sock);
-    return 0;
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, game_1p_point, sock_client) != 0){
+      close(*sock_client);
+      free(sock_client);
+      continue;
+    }
+    pthread_detach(thread);
+    
+  }
+  close(serv_sock);
+  return 0;
 }
+
+
+
