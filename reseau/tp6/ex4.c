@@ -1,24 +1,16 @@
-#define _POSIX_C_SOURCE 200112L
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
-
-#define SIZE_MESS 100
-
-union sockadresse
-{
-    struct sockaddr_in sadr4;
-    struct sockaddr_in6 sadr6;
-};
+#include <netdb.h>
 
 int main(int argc, char **argv){
+    
+    struct sockaddr_in6 sockfd;
 
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -27,12 +19,13 @@ int main(int argc, char **argv){
     hints.ai_socktype = SOCK_STREAM;
 
     struct addrinfo *r, *p;
-    if ((getaddrinfo(argv[1], "2628", &hints, &r)) != 0)
+    if ((getaddrinfo(argv[1], "2628", &hints, &r)) != 0){
         exit(EXIT_FAILURE);
+    } 
 
     p = r;
     int sock;
-    while (p != NULL){
+    while( p != NULL ){
         if((sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) > 0){
             int opt = 0;
             setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof(opt));
@@ -43,48 +36,40 @@ int main(int argc, char **argv){
         }
         p = p->ai_next;
     }
-    if (p == NULL){
-        perror("NAN pas connect");
-        exit(1);
-    }
-    
-    union sockadresse adr;
-    memset(&adr, 0, sizeof(adr));
-    if (p->ai_family == AF_INET){
-        memcpy(&(adr.sadr4), (struct sockaddr_in *)p->ai_addr, p->ai_addrlen);
-    }
-    else{
-        memcpy(&(adr.sadr6), (struct sockaddr_in6 *)p->ai_addr, p->ai_addrlen);
-    }
+
+    //affichage facultatif mais bon a savoir si besoin de stocker l'addresse 
+    memcpy(&(sockfd), (struct sockaddr_in6 *)p->ai_addr, p->ai_addrlen);
+    char addr_buf[INET6_ADDRSTRLEN];
+    memset(addr_buf, 0, sizeof(addr_buf));
+    if (inet_ntop(AF_INET6, &(sockfd.sin6_addr), addr_buf, sizeof(addr_buf)) == NULL)
+    perror("erreur recuperation de l’adresse IPv4");
+    else
+    printf("client connecte : %s %d\n", addr_buf, ntohs(sockfd.sin6_port));
+
     freeaddrinfo(r);
-
-    char recu[512];
-    memset(&recu, 0, 512);
-    int n = recv(sock, recu, sizeof(recu)-1, 0);
-    if (n > 0) {
-        recu[n] = '\0'; // On ferme la chaîne proprement
-    }
-    if(strncmp("220 ", recu, 4) != 0){
-        perror("NAN pas 220");
+    
+    char bufconfirm[5];
+    memset(&bufconfirm, 0, 4);
+    int l = recv(sock, bufconfirm, sizeof(bufconfirm)-1, 0);
+    bufconfirm[l] = '\0';
+    if(strcmp("220 ", bufconfirm) != 0){
+        printf("non métisse \n");
         exit(1);
     }
-    puts("OKOKOK");
+    puts("OUI métisse");
 
+    char buf[512];
     char ecr[100];
-    memset(&ecr, 0, 100);
-    snprintf(ecr, sizeof(ecr)-1, "DEFINE * %s\r\n", argv[2]);
+    memset(&ecr, 0, sizeof(ecr));
+    snprintf(ecr, sizeof(ecr), "DEFINE * %s\r\n", argv[2]);
     send(sock, ecr, strlen(ecr), 0);
-    memset(&recu, 0, 512);
-    char check[4];
-
+    memset(&buf, 0, sizeof(buf));
+    int n;
     while(1){
-        n = recv(sock, recu, sizeof(recu)-1, 0);
-        if(n <= 0){
-            exit(1);
-        }
-        recu[n] = '\0';
-        printf("%s", recu);
-        if(strstr(recu, "\r\n.\r\n") != NULL){
+        n = recv(sock, buf, sizeof(buf)-1, 0);
+        buf[n] = '\0';
+        printf("%s", buf);
+        if(strstr(buf, "\r\n.\r\n") != NULL){
             break;
         }
     }
