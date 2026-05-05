@@ -5,31 +5,38 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include <net/if.h>
 
 int main(){
     //socket réception
-    int sock = socket(AF_INET6, SOCK_DGRAM, 0);
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
     int loop = 1;
-    setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop));
+    setsockopt(sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
     //adresse réception
-    struct sockaddr_in6 serv;
+    struct sockaddr_in serv;
     memset(&serv, 0, sizeof(serv));
-    serv.sin6_family = AF_INET6;
-    serv.sin6_port = htons(12121);
-    serv.sin6_addr = in6addr_any;
+    serv.sin_family = AF_INET;
+    serv.sin_port = htons(12121);
+    serv.sin_addr.s_addr = htonl(INADDR_ANY);
     bind(sock, (struct sockaddr *)&serv, sizeof(serv));
 
     //adresse envoi
-    struct sockaddr_in6 addr_envoi;
+    struct sockaddr_in addr_envoi;
     memset(&addr_envoi, 0, sizeof(addr_envoi));
-    addr_envoi.sin6_family = AF_INET6;
-    addr_envoi.sin6_port = htons(10201);
-    inet_pton(AF_INET6, "ff02::4:3:2:1", &addr_envoi.sin6_addr);
+    addr_envoi.sin_family = AF_INET;
+    addr_envoi.sin_port = htons(10201);
+    inet_pton(AF_INET, "225.1.2.3", &addr_envoi.sin_addr);
+
+    struct ip_mreqn group;
+    memset(&group, 0, sizeof(group));
+    group.imr_ifindex = if_nametoindex("lo0");
+    setsockopt(sock, IPPROTO_IP, IP_MULTICAST_IF, &group, sizeof(group));
+
 
     while(1){
-        struct sockaddr_in6 client;
+        struct sockaddr_in client;
         socklen_t longu = sizeof(client);
-        char adresse[INET6_ADDRSTRLEN];
+        char adresse[INET_ADDRSTRLEN];
 
         char bufrec[1024];
         int lu = recvfrom(sock, bufrec, sizeof(bufrec), 0, (struct sockaddr *)&client, &longu);
@@ -41,8 +48,8 @@ int main(){
         time(&maintenant);
         info_temps = localtime(&maintenant);
 
-        inet_ntop(AF_INET6, &(client.sin6_addr), adresse, sizeof(adresse));
-        int len = strlen(bufrec) + 5 + INET6_ADDRSTRLEN;
+        inet_ntop(AF_INET, &(client.sin_addr), adresse, sizeof(adresse));
+        int len = strlen(bufrec) + 5 + INET_ADDRSTRLEN;
         char bufenv[len];
         sprintf(bufenv, "%s\t%02d:%02d\t%s", adresse, info_temps->tm_hour, info_temps->tm_min, bufrec);
         printf("Serveur a reçu et diffuse : %s\n", bufenv);
