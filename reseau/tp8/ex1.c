@@ -5,25 +5,25 @@
 #include <stdio.h>
 #include <unistd.h>
 
-struct entete {
-    uint16_t id;      
-    uint16_t flags;   
-    uint16_t qdcount; 
-    uint16_t ancount; 
-    uint16_t nscount; 
-    uint16_t arcount; 
-};
+struct entete{
+    uint16_t id;
+    uint16_t flags;
+    uint16_t qdcount;
+    uint16_t ancount;
+    uint16_t nscount;
+    uint16_t arcount;
+}typedef entete;
 
-void build_entete(struct entete *h) {
-    h->id = htons(0x1234);
-    h->flags = htons(0x0100);
-    h->qdcount = htons(1);    
-    h->ancount = 0;
-    h->nscount = 0;
-    h->arcount = 0;
+void constr_entete(entete *e){
+    e->id = htons(1);
+    e->flags = htons(0x0100);
+    e->qdcount = htons(1);
+    e->ancount = 0;
+    e->nscount = 0;
+    e->arcount = 0;
 }
 
-void build_qname(unsigned char *qname, char *hostname) {
+void constr_qname(unsigned char *qname, char *hostname) {
     int cur = 0;
     strcat(hostname, ".");
     for (int i = 0; i < strlen(hostname); i++) {
@@ -38,75 +38,83 @@ void build_qname(unsigned char *qname, char *hostname) {
     *qname = 0;
 }
 
-int main(int argc, char *argv[]) {
-    char *hostname = argv[1]; 
-    
-    char *dns_ip = (argc > 2) ? argv[2] : "8.8.8.8"; 
+int main(int argc, char **argv){
+    entete e;
+    memset(&e,0,sizeof(e));
+    constr_entete(&e);
+    uint8_t buf[strlen(argv[1])+2];
+    constr_qname(buf, argv[1]);
+    char envoi[sizeof(e) + sizeof(buf) + 4];
+    memcpy(envoi, &e, sizeof(e));
+    memcpy(envoi + sizeof(e), buf, sizeof(buf));
+    uint16_t qtype = htons(1);
+    uint16_t qclass = htons(1);
+    memcpy(envoi + sizeof(e) + sizeof(buf), &qtype, 2);
+    memcpy(envoi + sizeof(e) + sizeof(buf) + 2, &qclass, 2);
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-        perror("Erreur création socket");
-        return 1;
+    struct sockaddr_in serv;
+    memset(&serv, 0, sizeof(serv));
+    serv.sin_family = AF_INET;
+    serv.sin_port = htons(53);
+
+    if (inet_aton("192.168.1.254", &serv.sin_addr) == 0) {
+        perror("IP invalide");
+        exit(1);
     }
-
-    struct sockaddr_in dest;
-    dest.sin_family = AF_INET;
-    dest.sin_port = htons(53);
-    dest.sin_addr.s_addr = inet_addr(dns_ip);
-
-    unsigned char buffer[512]; 
-    memset(buffer, 0, 512);
-    
-    struct entete *dns_header = (struct entete *)buffer;
-    build_entete(dns_header);
-
-    unsigned char *qname = buffer + sizeof(struct entete);
-
-    char host_copy[256];
-    strncpy(host_copy, hostname, 255);
-    host_copy[255] = '\0';
-    
-    build_qname(qname, host_copy);
-
-    unsigned char *qinfo = qname + strlen(hostname) + 2;
-
-    uint16_t type = htons(1);
-        uint16_t class = htons(1);
-
-        memcpy(qinfo, &type, 2);
-        qinfo += 2;
-        memcpy(qinfo, &class, 2);
-        qinfo += 2;
-
-    int packet_size = qinfo - buffer;
-
-    if (sendto(sock, buffer, packet_size, 0, (struct sockaddr*)&dest, sizeof(dest)) < 0) {
-        perror("Erreur lors de l'envoi");
-        return 1;
+    uint8_t buffer[512];
+    sendto(sock, envoi, sizeof(envoi), 0, (struct sockaddr*)&serv, sizeof(serv));
+    int taillerep = recvfrom(sock, buffer, sizeof(buffer), 0, NULL, NULL);
+    if((buffer[3] & 15)){
+        perror("erreur");
+        exit(0);
     }
-    socklen_t addrlen = sizeof(dest);
-    if (recvfrom(sock, buffer, 512, 0, (struct sockaddr*)&dest, &addrlen) < 0) {
-        perror("Erreur lors de l'envoi");
-        return 1;
+    uint16_t ancount;
+    memcpy(&ancount, buffer+6, 2);
+    ancount = ntohs(ancount);
+    uint16_t curs = sizeof(entete);
+    while(1){
+        if(buffer[curs] == 0){
+            curs++;
+            break;
+        }
+        else if(buffer[curs] >= 192){
+            curs += 2;
+            break;
+        }
+        else{
+            curs += (buffer[curs]+1);
+        }
     }
-    struct entete *reponse = (struct entete*)buffer;
-    uint16_t flags = ntohs(reponse->flags);
-    int rcode = flags & 0x000F; 
-    if (rcode != 0) {
-        printf("err dns: %d\n", rcode); 
-        return 1;
+    for(int i = 0; i<ancount; i++){
+        while(1){
+            if(buffer[curs] == 0){
+                curs++;
+                break;
+            }
+            else if(buffer[curs] >= 192){
+                curs += 2;
+                break;
+            }
+            else{
+                curs += (buffer[curs]+1);
+            }
+        }
+        uint16_t type;
+        memcpy(&type, buffer+curs, 2);
+        curs += 8;
+        if(ntohs(type) == 1){
+            char addr_buf[INET_ADDRSTRLEN];
+            memset(addr_buf, 0, sizeof(addr_buf));
+            inet_ntop(AF_INET, &buffer[curs], addr_buf, sizeof(addr_buf));
+            printf("%s\n", addr_buf);
+        }
+        else if(ntohs(type) == 1){
+            char addr_buf[INET6_ADDRSTRLEN];
+            memset(addr_buf, 0, sizeof(addr_buf));
+            inet_ntop(AF_INET6, &buffer[curs], addr_buf, sizeof(addr_buf));
+            printf("%s\n", addr_buf);
+        }
     }
-
-    unsigned char *curs = buffer + packet_size + 10;
-    uint16_t rdlength;
-    memcpy(&rdlength, curs, 2);
-    rdlength = ntohs(rdlength);
-    curs += 2;
-
-    if (rdlength == 4) {
-        printf("Adresse IP : %d.%d.%d.%d\n", curs[0], curs[1], curs[2], curs[3]);
-    }
-
-    close(sock);
-    return 0;
+    exit(0);
 }
