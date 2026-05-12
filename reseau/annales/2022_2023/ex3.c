@@ -41,7 +41,7 @@ int main(int argc, char **argv){
     struct ipv6_mreq mreq;
     inet_pton(AF_INET6, "ff12::ae2:b", &mreq.ipv6mr_multiaddr);
     mreq.ipv6mr_interface = 0;
-    setsockopt(sock4444, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq));
+    opt(sock4444, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq));
 
     //pour écouter le pair précédent
     int sock5555 = socket(AF_INET6, SOCK_DGRAM, 0);
@@ -59,7 +59,7 @@ int main(int argc, char **argv){
     fds[2].events = POLLIN;
     int timeout = -1;
     while(1){
-        int ret = poll(fds, 3, timeout);
+        int ret = poll(fds, 3, 5000);
         if(fds[0].revents & POLLIN){
             char buff[255];
             int total = 0;
